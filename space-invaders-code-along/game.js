@@ -12,13 +12,16 @@
 
 
     var self = this;
-    var tick = function() {
-      self.update();
-      self.draw(screen, gameSize);
-      requestAnimationFrame(tick);
-    };
+    loadSound("shoot.wav", function(shootSound) {
+      self.shootSound = shootSound;
+      var tick = function() {
+        self.update();
+        self.draw(screen, gameSize);
+        requestAnimationFrame(tick);
+      };
 
-    tick();
+      tick();
+    });
   };
 
   Game.prototype = {
@@ -54,7 +57,7 @@
       }).length > 0;
     }
   };
-  
+
   var Player = function(game, gameSize){
     this.game = game;
     this.size = { x: 15, y: 15};
@@ -72,6 +75,8 @@
        if (this.keyboarder.isDown(this.keyboarder.KEYS.SPACE)) {
          var bullet = new Bullet({ x: this.center.x, y: this.center.y - this.size.x / 2}, { x: 0, y: -6});
          this.game.addBody(bullet);
+         this.game.shootSound.load();
+         this.game.shootSound.play();
        }
     }
   };
@@ -156,6 +161,16 @@ var createInvaders = function(game) {
       b1.center.y - b1.size.y / 2 > b2.center.y + b2.size.y / 2);
   };
 
+  var loadSound = function(url, callback ){
+    var loaded = function(){
+      callback(sound);
+      sound.removeEventListener('canplaythrough', loaded);
+    };
+
+    var sound = new Audio(url);
+    sound.addEventListener('canplaythrough', loaded);
+    sound.load();
+  }
   window.onload = function() {
     new Game("screen");
   };
